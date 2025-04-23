@@ -14,7 +14,9 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.CounterApp">
+        android:theme="@style/Theme.CounterApp"
+        android:appComponentFactory="@string/app_component_factory"
+        tools:replace="android:appComponentFactory">
 
         <!-- 📌 這裡加入 FileProvider -->
         <provider

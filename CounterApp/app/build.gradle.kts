@@ -41,11 +41,12 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
-    implementation("androidx.exifinterface:exifinterface:1.4.0")
-    implementation("androidx.core:core:1.12.0")
-//    implementation("org.pytorch:pytorch_android:1.9.0")
-//    implementation("org.pytorch:pytorch_android_torchvision:1.9.0")
+    implementation(libs.androidx.exifinterface)
+    implementation(libs.androidx.core)
+
+    implementation("org.pytorch:pytorch_android:1.13.1") // 替換為最新的穩定版本
+    implementation("org.pytorch:pytorch_android_torchvision:1.13.1") // 替換為最新的穩定版本
     // ✅ 單元測試依賴（JVM 測試，不需要 Android API）
-    testImplementation("junit:junit:4.13.2")
+    testImplementation(libs.junit)
 
 }

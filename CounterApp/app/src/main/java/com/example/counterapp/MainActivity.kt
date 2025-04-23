@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         gpsManager = GPSManager(this)
+        RecognitionModel.initialize(this) // 初始化模型
         requestPermissions()
 
         textViewResult = findViewById(R.id.textViewResult)
@@ -64,6 +65,9 @@ class MainActivity : AppCompatActivity() {
         CameraManager.handleCameraResult(this, requestCode, resultCode, data) { imageBitmap ->
             if (imageBitmap != null) {
                 imageView.setImageBitmap(imageBitmap)
+                // 執行模型辨識
+                val similarity = RecognitionModel.classifyImage(imageBitmap)
+                textViewResult.text = "相似度：$similarity"
             } else {
                 textViewResult.text = "拍照失敗"
             }
