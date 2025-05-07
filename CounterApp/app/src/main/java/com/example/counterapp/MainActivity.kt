@@ -14,8 +14,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import kotlin.math.*
+import com.android.volley.Request
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
+import org.json.JSONArray
+import org.json.JSONObject
+
 
 class MainActivity : AppCompatActivity() {
+    val apiUrl = "http:// 192.168.194.220/process-vector"
 
     private lateinit var imageView: ImageView
     private lateinit var textViewResult: TextView
@@ -26,8 +33,12 @@ class MainActivity : AppCompatActivity() {
 //    private val targetLon = 121.77400613690929
 
     // 目標位置：這裡以 test_now 當下地點 為例
-    private val targetLat = 25.1342536
-    private val targetLon = 121.7891466
+//    private val targetLat = 25.1342536
+//    private val targetLon = 121.7891466
+
+    // 目標位置（地點 A）：這裡以電綜大樓 為例
+    private val targetLat = 25.15074259114326
+    private val targetLon = 121.78002178454129
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,14 +76,33 @@ class MainActivity : AppCompatActivity() {
         CameraManager.handleCameraResult(this, requestCode, resultCode, data) { imageBitmap ->
             if (imageBitmap != null) {
                 imageView.setImageBitmap(imageBitmap)
-                // 執行模型辨識
-                val similarity = RecognitionModel.classifyImage(imageBitmap)
-                textViewResult.text = "相似度：$similarity"
+
+                // 提取特徵向量
+                val featureVector = RecognitionModel.extractFeatureVector(imageBitmap)
+
+                // 傳送特徵向量到後端
+                sendFeatureVector(featureVector)
+
+                textViewResult.text = "特徵向量已發送到伺服器"
             } else {
                 textViewResult.text = "拍照失敗"
             }
         }
     }
+    private fun sendFeatureVector(vector: FloatArray) {  // 🔹 正確實作 API 發送邏輯
+        val jsonObject = JSONObject().apply {
+            put("vector", JSONArray(vector.toList()))
+        }
+
+        val request = JsonObjectRequest(
+            Request.Method.POST, apiUrl, jsonObject,
+            { response -> println("伺服器回應: $response") },
+            { error -> println("錯誤: $error") }
+        )
+
+        Volley.newRequestQueue(this).add(request)
+    }
+
 
     private fun requestPermissions() {
         val permissions = mutableListOf(
@@ -173,4 +203,5 @@ class MainActivity : AppCompatActivity() {
         val diff = abs(angle1 - angle2) % 360f
         return if (diff > 180f) 360f - diff else diff
     }
+
 }

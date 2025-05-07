@@ -6,34 +6,26 @@ import org.pytorch.IValue
 import org.pytorch.Module
 import org.pytorch.Tensor
 import org.pytorch.torchvision.TensorImageUtils
-import java.nio.FloatBuffer
 import java.io.File
 
 object RecognitionModel {
-    private const val MODEL_FILE = "simclr_mobilenetv3.pt"
     private lateinit var module: Module
 
     fun initialize(context: Context) {
         try {
-            val modelPath = assetFilePath(context, MODEL_FILE)
+            val modelPath = assetFilePath(context, "simclr_mobilenetv3.pt")
             module = Module.load(modelPath)
+            println("✅ 模型載入成功")
         } catch (e: Exception) {
             e.printStackTrace()
             throw RuntimeException("模型載入失敗: ${e.message}")
         }
     }
 
-
-    fun classifyImage(bitmap: Bitmap): Float {
-        // 預處理圖片
+    fun extractFeatureVector(bitmap: Bitmap): FloatArray {
         val inputTensor = preprocessImage(bitmap)
-
-        // 模型推論
         val outputTensor = module.forward(IValue.from(inputTensor)).toTensor()
-        val scores = outputTensor.dataAsFloatArray
-
-        // 返回第一個類別的相似分數（假設 ntou_donut 是第一個類別）
-        return scores[0]
+        return outputTensor.dataAsFloatArray // 🔹 只輸出特徵向量，不執行比對！
     }
 
     private fun preprocessImage(bitmap: Bitmap): Tensor {
