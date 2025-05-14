@@ -13,7 +13,7 @@ object RecognitionModel {
 
     fun initialize(context: Context) {
         try {
-            val modelPath = assetFilePath(context, "simclr_mobilenetv3.pt")
+            val modelPath = assetFilePath(context, "best_model.pt")
             module = Module.load(modelPath)
             println("✅ 模型載入成功")
         } catch (e: Exception) {
