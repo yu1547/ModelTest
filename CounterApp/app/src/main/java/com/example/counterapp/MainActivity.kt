@@ -22,7 +22,8 @@ import org.json.JSONObject
 
 
 class MainActivity : AppCompatActivity() {
-    val apiUrl = "http:// 192.168.194.220/process-vector"
+    private val apiUrl = "http://192.168.3.130:3000/process-vector" // 確保 `port 3000` 有寫，並移除多餘空
+//    private val apiUrl = "http://192.168.194.220:3000/process-vector" // 確保 `port 3000` 有寫，並移除多餘空
 
     private lateinit var imageView: ImageView
     private lateinit var textViewResult: TextView
@@ -96,7 +97,18 @@ class MainActivity : AppCompatActivity() {
 
         val request = JsonObjectRequest(
             Request.Method.POST, apiUrl, jsonObject,
-            { response -> println("伺服器回應: $response") },
+            { response ->
+                val results = response.getJSONArray("result")
+                val displayText = (0 until results.length()).joinToString("\n") {
+                    val item = results.getJSONObject(it)
+                    "Top ${item.getInt("rank")}: 類別=${item.getString("label")}, 相似度=${
+                        item.getDouble(
+                            "similarity"
+                        )
+                    }"
+                }
+                textViewResult.text = displayText
+            },
             { error -> println("錯誤: $error") }
         )
 
