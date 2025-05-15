@@ -50,25 +50,22 @@ router.post("/process-vector", function (req, res) {
         }
     });
 
-    pythonProcess.on("close", () => {
-        console.log(outputData);  // ✅ 在後端終端輸出完整 log
-        const lines = outputData.trim().split("\n");
+    pythonProcess.on('close', () => {
+        try {
+            const jsonResult = JSON.parse(outputData);
 
-        // 🔍 嘗試找出 Top 結果部分並轉為 JSON 格式回傳
-        const resultList = lines.filter((line) => line.startsWith("Top")).map((line) => {
-            const match = line.match(/Top (\d+): 類別=(.*?), 相似度=([\d.]+), 圖片=(.*)/);
-            if (match) {
-                return {
-                    rank: parseInt(match[1]),
-                    label: match[2],
-                    similarity: parseFloat(match[3]),
-                    path: match[4],
-                };
-            }
-        }).filter(Boolean);
+            // 後端印出訊息
+            console.log(`判斷類別: ${jsonResult.most_similar_class}`);
+            console.log(`相似度: ${jsonResult.similarity.toFixed(4)}, ${jsonResult.confidence}`);
+            console.log(`判斷依據: ${jsonResult.reason}`);
 
-        res.json({ status: "比對完成", result: resultList });
+            res.json({ status: '比對完成', result: jsonResult });
+        } catch (err) {
+            console.error('JSON 解析失敗:', err);
+            res.status(500).json({ status: '錯誤', message: '無法解析 Python 回傳結果' });
+        }
     });
+
 });
 
 module.exports = router;

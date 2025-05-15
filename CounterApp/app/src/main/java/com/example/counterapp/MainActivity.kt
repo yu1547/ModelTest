@@ -22,8 +22,10 @@ import org.json.JSONObject
 
 
 class MainActivity : AppCompatActivity() {
-    private val apiUrl = "http://192.168.3.130:3000/process-vector" // 確保 `port 3000` 有寫，並移除多餘空
-//    private val apiUrl = "http://192.168.194.220:3000/process-vector" // 確保 `port 3000` 有寫，並移除多餘空
+
+//    private val apiUrl = "http://140.121.47.198:3000/process-vector" // ntou802.1
+//    private val apiUrl = "http://192.168.3.130:3000/process-vector" // 212教室
+    private val apiUrl = "http://192.168.12.220:3000/process-vector" // 確保 `port 3000` 有寫，並移除多餘空
 
     private lateinit var imageView: ImageView
     private lateinit var textViewResult: TextView
@@ -90,7 +92,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    private fun sendFeatureVector(vector: FloatArray) {  // 🔹 正確實作 API 發送邏輯
+    private fun sendFeatureVector(vector: FloatArray) {
         val jsonObject = JSONObject().apply {
             put("vector", JSONArray(vector.toList()))
         }
@@ -98,22 +100,29 @@ class MainActivity : AppCompatActivity() {
         val request = JsonObjectRequest(
             Request.Method.POST, apiUrl, jsonObject,
             { response ->
-                val results = response.getJSONArray("result")
-                val displayText = (0 until results.length()).joinToString("\n") {
-                    val item = results.getJSONObject(it)
-                    "Top ${item.getInt("rank")}: 類別=${item.getString("label")}, 相似度=${
-                        item.getDouble(
-                            "similarity"
-                        )
-                    }"
-                }
+                val result = response.getJSONObject("result")
+                val label = result.getString("most_similar_class")  // 改這裡
+                val similarity = result.getDouble("similarity")      // 建議用 getDouble 取得數字
+                val confidence = result.getString("confidence")      // 如果需要顯示
+                val reason = result.getString("reason")
+
+                val displayText = """
+                    判斷類別：$label
+                    相似度：$similarity
+                    可信度：$confidence
+                    判斷依據：$reason
+                """.trimIndent()
+
                 textViewResult.text = displayText
+
             },
             { error -> println("錯誤: $error") }
         )
 
         Volley.newRequestQueue(this).add(request)
     }
+
+
 
 
     private fun requestPermissions() {
